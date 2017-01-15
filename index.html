@@ -12,8 +12,9 @@
   <div id="app">
     <h1>Dcard 寵物板常用字詞分析</h1>
 
-    <p>
+    <p style="margin-bottom: 6em;">
       <h3>動詞</h3>
+      <canvas id="VChart" width="400" height="400"></canvas>
       <div class="table-responsive">
         <table class="table">
           <tr>
@@ -30,8 +31,9 @@
       </div>
     </p>
 
-    <p>
+    <p style="margin-bottom: 6em;">
       <h3>名詞</h3>
+      <canvas id="NChart" width="400" height="400"></canvas>
       <div class="table-responsive">
         <table class="table">
           <tr>
@@ -48,8 +50,9 @@
       </div>
     </p>
 
-    <p>
+    <p style="margin-bottom: 6em;">
       <h3>形容詞</h3>
+      <canvas id="AChart" width="400" height="400"></canvas>
       <div class="table-responsive">
         <table class="table">
           <tr>
@@ -69,6 +72,7 @@
   </div>
 
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script src="./n.js"></script>
   <script src="./v.js"></script>
   <script src="./a.js"></script>
@@ -88,6 +92,62 @@
         v: v,
         n: n,
         a: a,
+      },
+      mounted: function () {
+        var ctxV = document.getElementById("VChart").getContext("2d");
+        var ctxN = document.getElementById("NChart").getContext("2d");
+        var ctxA = document.getElementById("AChart").getContext("2d");
+        new Chart(ctxV, {
+          type: 'bar',
+          data: {
+            labels: v.map(function (e) {
+              return e.word
+            }),
+            datasets: [
+                {
+                    label: "V",
+                    borderWidth: 1,
+                    data: v.map(function (e) {
+                      return e.count
+                    }),
+                }
+            ]
+          },
+        });
+        new Chart(ctxN, {
+          type: 'bar',
+          data: {
+            labels: n.map(function (e) {
+              return e.word
+            }),
+            datasets: [
+                {
+                    label: "N",
+                    borderWidth: 1,
+                    data: n.map(function (e) {
+                      return e.count
+                    }),
+                }
+            ]
+          },
+        });
+        new Chart(ctxA, {
+          type: 'bar',
+          data: {
+            labels: a.map(function (e) {
+              return e.word
+            }),
+            datasets: [
+                {
+                    label: "A",
+                    borderWidth: 1,
+                    data: a.map(function (e) {
+                      return e.count
+                    }),
+                }
+            ]
+          },
+        });
       }
     });
   </script>
