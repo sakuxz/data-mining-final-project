@@ -96,7 +96,7 @@ function getFraquentWordPlus(data, minFraquent) {
 }
 
 function storeInArff(fileName, fields, data) {
-  fs.writeFileSync(fileName, `@relation dcard_sex\n`);
+  fs.writeFileSync(fileName, `@relation dcard_pet\n`);
   fields.forEach((item) => {
     fs.appendFileSync(fileName, `@attribute '${item}' { t}\n`);
   });
