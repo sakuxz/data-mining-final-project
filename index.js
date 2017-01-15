@@ -13,10 +13,24 @@ const needPostNum = 500;
 let getPostCount = 0;
 let posts = [];
 
-// 爬 Dcard 西斯板文章
+function getSexPostDetail(id) {
+  return new Promise(function(resolve, reject) {
+    request
+    .get(`https://www.dcard.tw/_api/posts/${id}`)
+    .end(function(err, res){
+      if (err) resolve({
+        title: '',
+        content: '',
+      });
+      resolve(JSON.parse(res.text));
+    });
+  });
+}
+
+// 爬 Dcard 寵物板文章
 function getSexPost(before, callback) {
   request
-  .get('https://www.dcard.tw/_api/forums/sex/posts')
+  .get('https://www.dcard.tw/_api/forums/pet/posts')
   .query({ popular: true, before: before })
   .end(function(err, res){
     let t = JSON.parse(res.text);
@@ -24,13 +38,22 @@ function getSexPost(before, callback) {
       callback();
       return;
     }
-    posts = posts.concat(t);
-    getPostCount += t.length;
-    if (getPostCount < needPostNum) getSexPost(t[t.length-1].id, callback);
+    // posts = posts.concat(t);
+    // getPostCount += t.length;
+    let results = t.map((item) => {
+      return getSexPostDetail(item.id);
+    });
+    Promise.all(results).then((items) => {
+      posts = posts.concat(items);
+      getPostCount += items.length;
+      if (getPostCount < needPostNum) getSexPost(t[t.length-1].id, callback);
+    });
   });
 }
 
+
 // const ignoreTag = ['x','r','c','f','d','zg','ul','p','ug'];
+const ignoreWord = ['著','是', '會', '有', '要', '到', '看', '去', '想', '沒有'];
 let processedNData = [];
 let processedVData = [];
 let processedAData = [];
@@ -96,7 +119,7 @@ function storeInArff(fileName, fields, data) {
 // 開始爬資料
 getSexPost(undefined, function () {
   posts.forEach(function (e, i){
-    let result = nodejieba.tag(e.excerpt + ' ' + e.title);
+    let result = nodejieba.tag(e.content + ' ' + e.title);
     let v = [];
     let n = [];
     let a = [];
@@ -104,11 +127,11 @@ getSexPost(undefined, function () {
       // if (ignoreTag.indexOf(item.tag) === -1) {
       //   n.push(item.word);
       // }
-      if (item.tag.indexOf('n') > -1) {
+      if (item.tag.indexOf('n') > -1 && item.tag.indexOf('eng') === -1 && ignoreWord.indexOf(item.word) === -1) {
         n.push(item.word);
-      } else if (item.tag.indexOf('v') > -1) {
+      } else if (item.tag.indexOf('v') > -1 && ignoreWord.indexOf(item.word) === -1) {
         v.push(item.word);
-      } else if (item.tag.indexOf('a') > -1) {
+      } else if (item.tag.indexOf('a') > -1 && ignoreWord.indexOf(item.word) === -1) {
         a.push(item.word);
       }
     });
@@ -134,5 +157,5 @@ getSexPost(undefined, function () {
     if (e.length > 0) return true;
     else return false;
   });
-  storeInArff('sex.arff', nFraquentWord, processedNData)
+  storeInArff('pet.arff', nFraquentWord, processedNData)
 });
